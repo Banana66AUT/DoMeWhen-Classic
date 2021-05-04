@@ -78,6 +78,7 @@ function LoadBanetoBotAPI()
 		["cgobjectdata__m_scale"] = "CGObjectData__m_scale",
 		["cgobjectdata__m_dynamicflags"] = "CGObjectData__m_dynamicFlags",
 		["cgareatriggerdata__m_caster"] = "CGAreaTriggerData__m_caster",
+		["cggameobjectdata__flags"] = "CGGameObjectData__Flags",
 		["cgunitdata__npcflags"]="CGUnitData__npcFlags"
 	}
 	StopFalling = bntapi.StopFalling
@@ -85,37 +86,160 @@ function LoadBanetoBotAPI()
 	GetObjectWithPointer = bntapi.GetObject
 	ObjectExists = bntapi.ObjectExists
 	ObjectIsVisible = UnitIsVisible
-	ObjectPosition = bntapi.ObjectPosition
-	ObjectFacing = bntapi.ObjectFacing
-	ObjectName = UnitName
-	ObjectID = bntapi.ObjectId
-	ObjectIsUnit = function(obj) return obj and ObjectIsType(obj,ObjectTypes.Unit) end
-	ObjectIsPlayer = function(obj) return obj and ObjectIsType(obj,ObjectTypes.Player) end
-	ObjectIsGameObject = function(obj) return obj and ObjectIsType(obj,ObjectTypes.GameObject) end
-	ObjectIsAreaTrigger = function(obj) return obj and ObjectIsType(obj,ObjectTypes.AreaTrigger) end
-	GetDistanceBetweenPositions = bntapi.GetDistanceBetweenPositions
-	GetDistanceBetweenObjects = bntapi.GetDistanceBetweenObjects
-	GetPositionBetweenObjects = bntapi.GetPositionBetweenObjects
-	GetPositionFromPosition = bntapi.GetPositionFromPosition
-	GetAnglesBetweenPositions = function(X1, Y1, Z1, X2, Y2, Z2) return math.atan2(Y2 - Y1, X2 - X1) % (math.pi * 2), math.atan((Z1 - Z2) / math.sqrt(math.pow(X1 - X2, 2) + math.pow(Y1 - Y2, 2))) % math.pi end
+	ObjectPosition = function(obj)
+        local x, y, z = bntapi.ObjectPosition(obj)
+        if x then
+            return x, y, z
+        else
+            return 0, 0, 0
+        end
+    end
+	ObjectFacing = function(obj)
+        if UnitIsVisible(obj) then
+            return bntapi.ObjectFacing(obj)
+        else
+            return 0
+        end
+    end
+	ObjectName = function(obj)
+        if ObjectExists(obj) then
+            return UnitName(obj)
+        else
+            return "Unknown"
+        end
+    end
+	ObjectID = function(obj)
+        if UnitIsVisible(obj) then
+            return bntapi.ObjectId(obj)
+        else
+            return 0
+        end
+    end
+	ObjectIsUnit = function(obj)
+        return UnitIsVisible(obj) and bntapi.ObjectIsType(obj, bntapi.GetObjectTypeFlagsTable().Unit)
+    end
+	ObjectIsPlayer = function(obj) 
+		return obj and ObjectIsType(obj,ObjectTypes.Player) 
+	end
+	ObjectIsGameObject = function(obj) 
+		return obj and ObjectIsType(obj,ObjectTypes.GameObject) 
+	end
+	ObjectIsAreaTrigger = function(obj) 
+		return obj and ObjectIsType(obj,ObjectTypes.AreaTrigger) 
+	end
+	GetDistanceBetweenPositions = function(...)
+        return (... and bntapi.GetDistanceBetweenPositions(...)) or 0
+    end
+	GetDistanceBetweenObjects = function(obj1, obj2)
+        if UnitIsVisible(obj1) and UnitIsVisible(obj2) then
+            return bntapi.GetDistanceBetweenObjects(obj1, obj2)
+        else
+            return 0
+        end
+    end
+	GetPositionBetweenObjects = function(obj1, obj2, dist)
+        if UnitIsVisible(obj1) and UnitIsVisible(obj2) then
+            return bntapi.GetPositionBetweenObjects(obj1, obj2, dist)
+        else
+            return 0, 0, 0
+        end
+    end
+	GetPositionFromPosition = function(...)
+        return (... and bntapi.GetPositionFromPosition(...)) or 0, 0, 0
+    end
+	GetAnglesBetweenPositions = function(X1, Y1, Z1, X2, Y2, Z2) 
+		return math.atan2(Y2 - Y1, X2 - X1) % (math.pi * 2), math.atan((Z1 - Z2) / math.sqrt(math.pow(X1 - X2, 2) + math.pow(Y1 - Y2, 2))) % math.pi 
+	end
 	GetPositionBetweenPositions = bntapi.GetPositionBetweenPositions
-	ObjectIsFacing = bntapi.ObjectIsFacing
+	ObjectIsFacing = function(obj1, obj2, toler)
+        if UnitIsVisible(obj1) and UnitIsVisible(obj2) then
+            return (toler and bntapi.ObjectIsFacing(obj1, obj2, toler)) or (not toler and bntapi.ObjectIsFacing(obj1, obj2))
+        end
+    end
+	RawFacing = bntapi.RawFacing
 	ObjectInteract = InteractUnit
 	GetObjectCount = bntapi.GetObjectCount
+	GetNewObjects = function()
+        local added, removed = {}, {}
+        added, removed = select(3, bntapi.GetObjectCount()), select(4, bntapi.GetObjectCount())
+        return added, removed
+    end
+	GetNpcCount = bntapi.GetNpcCount
+    GetPlayerCount = bntapi.GetPlayerCount
 	GetObjectWithIndex = bntapi.GetObjectWithIndex
-	GetObjectWithGUID = bntapi.GetObjectWithGUID
-	UnitBoundingRadius = bntapi.UnitBoundingRadius
-	UnitCombatReach = bntapi.UnitCombatReach
-	UnitTarget = bntapi.UnitTarget
-	UnitCastID = function(unit) return select(7,GetSpellInfo(UnitCastingInfo(unit))), select(7,GetSpellInfo(UnitChannelInfo(unit))), bntapi.UnitCastingTarget(unit), bntapi.UnitCastingTarget(unit) end
+	GetNpcWithIndex = bntapi.GetNpcWithIndex
+	GetPlayerWithIndex = bntapi.GetPlayerWithIndex
+	GetObjectWithGUID = function(GUID)
+        if GUID and #GUID > 1 then
+            return bntapi.GetObjectWithGUID(GUID)
+        else
+            return ""
+        end
+    end
+	UnitBoundingRadius = function(obj)
+        if UnitIsVisible(obj) then
+            return bntapi.UnitBoundingRadius(obj)
+        else
+            return 0
+        end
+    end
+	UnitCombatReach = function(obj)
+        if UnitIsVisible(obj) then
+            return bntapi.UnitCombatReach(obj)
+        else
+            return 0
+        end
+    end
+	UnitTarget = function(obj)
+        if UnitIsVisible(obj) then
+            return bntapi.UnitTarget(obj)
+        else
+            return ""
+        end
+    end
+	UnitCastID = function(obj)
+        if UnitIsVisible(obj) then
+            local spellId, target = bntapi.UnitCasting(obj)
+            return spellId or 0, spellId or 0, target or "", target or ""
+        else
+            return 0, 0, "", ""
+        end
+    end
+	UnitCreator = function(obj)
+        if UnitIsVisible(obj) then
+            return bntapi.UnitCreator(obj)
+        else
+            return ""
+        end
+    end
 	TraceLine = bntapi.TraceLine
 	GetCameraPosition = bntapi.GetCameraPosition
 	CancelPendingSpell = bntapi.CancelPendingSpell
 	ClickPosition = bntapi.ClickPosition
 	IsAoEPending = bntapi.IsAoEPending
-	GetTargetingSpell = function() return end
-	WorldToScreen = function(...) return select(2,bntapi.WorldToScreen(...)) end
-	ScreenToWorld = bntapi.ScreenToWorld
+	GetTargetingSpell = function() 
+		return 
+	end
+	WorldToScreen = function(...)
+        local scale, x, y = UIParent:GetEffectiveScale(), select(2, bntapi.WorldToScreen(...))
+        local sx = GetScreenWidth() * scale
+        local sy = GetScreenHeight() * scale
+        return x * sx, y * sy
+    end
+	WorldToScreenRaw = function(...)
+        local x, y = select(2, bntapi.WorldToScreen(...))
+        return x, 1 - y
+    end
+	ScreenToWorld = function(X, Y)
+        local scale = UIParent:GetEffectiveScale()
+        local sx = GetScreenWidth() * scale
+        local sy = GetScreenHeight() * scale
+        return bntapi.ScreenToWorld(X / sx, Y / sy)
+    end
+	GetMousePosition = function()
+        local cur_x, cur_y = GetCursorPosition()
+        return cur_x, cur_y
+    end
 	GetDirectoryFiles = bntapi.GetDirectoryFiles
 	ReadFile = bntapi.ReadFile
 	WriteFile = bntapi.WriteFile
@@ -169,25 +293,47 @@ function LoadBanetoBotAPI()
 	ObjectGUID = UnitGUID
 	ObjectEntryID = UnitGUID
 	ObjectIsType = bntapi.ObjectIsType
-	GetAnglesBetweenObjects = bntapi.GetAnglesBetweenObjects
-	FaceDirection = function(a) if bntapi.GetObject(a) then bntapi.FaceDirection(GetAnglesBetweenObjects(a,"player")*2,true) else bntapi.FaceDirection(a,true) end end
+	GetAnglesBetweenObjects = function(obj1, obj2)
+        if UnitIsVisible(obj1) and UnitIsVisible(obj2) then
+            return bntapi.GetAnglesBetweenObjects(obj1, obj2)
+        else
+            return 0, 0
+        end
+    end
+	FaceDirection = function(a)
+        if bntapi.GetObject(a) then
+            bntapi.FaceDirection(GetAnglesBetweenObjects(a, "player"), true)
+        else
+            bntapi.FaceDirection(a, true)
+        end
+    end
 	ObjectIsBehind = bntapi.ObjectIsBehind
-	ObjectDescriptor = bntapi.ObjectDescriptor
+	ObjectDescriptor = function(obj, offset, type)
+        return UnitIsVisible(obj) and bntapi.ObjectDescriptor(obj, offset, type)
+    end
 	ObjectTypeFlags = bntapi.ObjectTypeFlags
 	ObjectField = bntapi.ObjectField
 	GetActivePlayer = function() return "player" end
-	UnitIsFacing = function(unit1,unit2,degree) return ObjectIsFacing(unit1,unit2,math.rad(degree)/2) end
-	UnitIsFalling = function(unit) return unit and UnitMovementFlags(unit) == bntapi.GetUnitMovementFlagsTable().Falling end
+	UnitIsFacing = function(unit1,unit2,degree) 
+		return ObjectIsFacing(unit1,unit2,math.rad(degree)/2) 
+	end
+	UnitIsFalling = function(unit) 
+		return unit and UnitMovementFlags(unit) == bntapi.GetUnitMovementFlagsTable().Falling 
+	end
 	UnitMovementFlags = bntapi.UnitMovementFlags
 	UnitBoundingRadius = bntapi.UnitBoundingRadius
 	UnitCombatReach = bntapi.UnitCombatReach
 	UnitFlags = bntapi.UnitFlags
-	PlayerFlags = function() bntapi.UnitFlags("player") end
+	PlayerFlags = function() 
+		bntapi.UnitFlags("player") 
+	end
 	ObjectCreator = bntapi.UnitCreator
 	UnitCanBeLooted = bntapi.UnitIsLootable
 	UnitCanBeSkinned = bntapi.UnitIsSkinnable
 	UnitPitch = bntapi.UnitPitch
-	GetGroundZ = function(StartX, StartY, Flags) return TraceLine(StartX, StartY, 10000, StartX, StartY, -10000, Flags or 0x10) end
+	GetGroundZ = function(StartX, StartY, Flags) 
+		return TraceLine(StartX, StartY, 10000, StartX, StartY, -10000, Flags or 0x10) 
+	end
 	GetCorpsePosition = bntapi.GetCorpsePosition
 	MoveTo = bntapi.MoveTo
 	ObjectDynamicFlags = bntapi.ObjectDynamicFlags
@@ -195,7 +341,13 @@ function LoadBanetoBotAPI()
 	GetUnitMovement = bntapi.UnitMovementField
 	WebsocketClose = bntapi.CloseWebsocket
 	WebsocketSend = bntapi.SendWebsocketData
-	ObjectPointer = bntapi.GetObject
+	ObjectPointer = function(obj)
+        if UnitIsVisible(obj) then
+            return bntapi.GetObject(obj)
+        else
+            return ""
+        end
+    end
 	UnitCreatureTypeID = bntapi.UnitCreatureTypeId
 	AesEncrypt = bntapi.AesEncrypt
 	AesDecrypt = bntapi.AesDecrypt
@@ -234,6 +386,16 @@ function LoadBanetoBotAPI()
 	GetOffset = function(offset)
 		return bntapi.GetObjectDescriptorsTable()[Offsets[string.lower(offset)]]
 	end
-	InitializeNavigation = function() end
-	IsHackEnabled = function() end
+	IsQuestObject = function(...)
+        return bntapi.ObjectIsQuestObjective(...,false)
+    end
+	InitializeNavigation = function() 
+		return 
+	end
+    IsHackEnabled = function()
+        return
+    end
+    SetHackEnabled = function()
+        return true
+    end
 end

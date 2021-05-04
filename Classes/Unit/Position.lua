@@ -73,6 +73,7 @@ function Unit:GetFacingAngle(OtherUnit)
     local X = OtherUnit.PosX - self.PosX
     local Y = OtherUnit.PosY - self.PosY
     local Angle = self:RawFacing()
+	if Angle == nil then Angle = 0 end
     if Angle > math.pi then
         Angle = Angle - (2 * math.pi)
     end

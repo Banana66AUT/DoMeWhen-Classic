@@ -78,6 +78,7 @@ function LoadMiniBotAPI()
 		["cgobjectdata__m_scale"] = "CGObjectData__m_scale",
 		["cgobjectdata__m_dynamicflags"] = "CGObjectData__m_dynamicFlags",
 		["cgareatriggerdata__m_caster"] = "CGAreaTriggerData__m_caster",
+		["cggameobjectdata__flags"] = "CGGameObjectData__Flags",
 		["cgunitdata__npcflags"]="CGUnitData__npcFlags"
 	}
 	StopFalling = wmbapi.StopFalling
@@ -85,37 +86,159 @@ function LoadMiniBotAPI()
 	GetObjectWithPointer = wmbapi.GetObject
 	ObjectExists = wmbapi.ObjectExists
 	ObjectIsVisible = UnitIsVisible
-	ObjectPosition = wmbapi.ObjectPosition
-	ObjectFacing = wmbapi.ObjectFacing
-	ObjectName = UnitName
-	ObjectID = wmbapi.ObjectId
-	ObjectIsUnit = function(obj) return obj and ObjectIsType(obj,ObjectTypes.Unit) end
-	ObjectIsPlayer = function(obj) return obj and ObjectIsType(obj,ObjectTypes.Player) end
-	ObjectIsGameObject = function(obj) return obj and ObjectIsType(obj,ObjectTypes.GameObject) end
-	ObjectIsAreaTrigger = function(obj) return obj and ObjectIsType(obj,ObjectTypes.AreaTrigger) end
-	GetDistanceBetweenPositions = wmbapi.GetDistanceBetweenPositions
-	GetDistanceBetweenObjects = wmbapi.GetDistanceBetweenObjects
-	GetPositionBetweenObjects = wmbapi.GetPositionBetweenObjects
-	GetPositionFromPosition = wmbapi.GetPositionFromPosition
-	GetAnglesBetweenPositions = function(X1, Y1, Z1, X2, Y2, Z2) return math.atan2(Y2 - Y1, X2 - X1) % (math.pi * 2), math.atan((Z1 - Z2) / math.sqrt(math.pow(X1 - X2, 2) + math.pow(Y1 - Y2, 2))) % math.pi end
+	ObjectPosition = function(obj)
+        local x, y, z = wmbapi.ObjectPosition(obj)
+        if x then
+            return x, y, z
+        else
+            return 0, 0, 0
+        end
+    end
+	ObjectFacing = function(obj)
+        if UnitIsVisible(obj) then
+            return wmbapi.ObjectFacing(obj)
+        else
+            return 0
+        end
+    end
+	ObjectName = function(obj)
+        if ObjectExists(obj) then
+            return UnitName(obj)
+        else
+            return "Unknown"
+        end
+    end
+	ObjectID = function(obj)
+        if UnitIsVisible(obj) then
+            return wmbapi.ObjectId(obj)
+        else
+            return 0
+        end
+    end
+	ObjectIsUnit = function(obj)
+        return UnitIsVisible(obj) and wmbapi.ObjectIsType(obj, wmbapi.GetObjectTypeFlagsTable().Unit)
+    end
+	ObjectIsPlayer = function(obj) 
+		return obj and ObjectIsType(obj,ObjectTypes.Player) 
+	end
+	ObjectIsGameObject = function(obj) 
+		return obj and ObjectIsType(obj,ObjectTypes.GameObject) 
+	end
+	ObjectIsAreaTrigger = function(obj) 
+		return obj and ObjectIsType(obj,ObjectTypes.AreaTrigger) 
+	end
+	GetDistanceBetweenPositions = function(...)
+        return (... and wmbapi.GetDistanceBetweenPositions(...)) or 0
+    end
+	GetDistanceBetweenObjects = function(obj1, obj2)
+        if UnitIsVisible(obj1) and UnitIsVisible(obj2) then
+            return wmbapi.GetDistanceBetweenObjects(obj1, obj2)
+        else
+            return 0
+        end
+    end
+	GetPositionBetweenObjects = function(obj1, obj2, dist)
+        if UnitIsVisible(obj1) and UnitIsVisible(obj2) then
+            return wmbapi.GetPositionBetweenObjects(obj1, obj2, dist)
+        else
+            return 0, 0, 0
+        end
+    end
+	GetPositionFromPosition = function(...)
+        return (... and wmbapi.GetPositionFromPosition(...)) or 0, 0, 0
+    end
+	GetAnglesBetweenPositions = function(X1, Y1, Z1, X2, Y2, Z2) 
+		return math.atan2(Y2 - Y1, X2 - X1) % (math.pi * 2), math.atan((Z1 - Z2) / math.sqrt(math.pow(X1 - X2, 2) + math.pow(Y1 - Y2, 2))) % math.pi 
+	end
 	GetPositionBetweenPositions = wmbapi.GetPositionBetweenPositions
-	ObjectIsFacing = wmbapi.ObjectIsFacing
+	ObjectIsFacing = function(obj1, obj2, toler)
+        if UnitIsVisible(obj1) and UnitIsVisible(obj2) then
+            return (toler and wmbapi.ObjectIsFacing(obj1, obj2, toler)) or (not toler and wmbapi.ObjectIsFacing(obj1, obj2))
+        end
+    end
 	ObjectInteract = InteractUnit
 	GetObjectCount = wmbapi.GetObjectCount
+	GetNewObjects = function()
+        local added, removed = {}, {}
+        added, removed = select(3, wmbapi.GetObjectCount()), select(4, wmbapi.GetObjectCount())
+        return added, removed
+    end
+	GetNpcCount = wmbapi.GetNpcCount
+    GetPlayerCount = wmbapi.GetPlayerCount
 	GetObjectWithIndex = wmbapi.GetObjectWithIndex
-	GetObjectWithGUID = wmbapi.GetObjectWithGUID
-	UnitBoundingRadius = wmbapi.UnitBoundingRadius
-	UnitCombatReach = wmbapi.UnitCombatReach
-	UnitTarget = wmbapi.UnitTarget
-	UnitCastID = function(unit) return select(7,GetSpellInfo(UnitCastingInfo(unit))), select(7,GetSpellInfo(UnitChannelInfo(unit))), wmbapi.UnitCastingTarget(unit), wmbapi.UnitCastingTarget(unit) end
+	GetNpcWithIndex = wmbapi.GetNpcWithIndex
+	GetPlayerWithIndex = wmbapi.GetPlayerWithIndex
+	GetObjectWithGUID = function(GUID)
+        if GUID and #GUID > 1 then
+            return wmbapi.GetObjectWithGUID(GUID)
+        else
+            return ""
+        end
+    end
+	UnitBoundingRadius = function(obj)
+        if UnitIsVisible(obj) then
+            return wmbapi.UnitBoundingRadius(obj)
+        else
+            return 0
+        end
+    end
+	UnitCombatReach = function(obj)
+        if UnitIsVisible(obj) then
+            return wmbapi.UnitCombatReach(obj)
+        else
+            return 0
+        end
+    end
+	UnitTarget = function(obj)
+        if UnitIsVisible(obj) then
+            return wmbapi.UnitTarget(obj)
+        else
+            return ""
+        end
+    end
+	UnitCastID = function(obj)
+        if UnitIsVisible(obj) then
+            local spellId, target = wmbapi.UnitCasting(obj)
+            return spellId or 0, spellId or 0, target or "", target or ""
+        else
+            return 0, 0, "", ""
+        end
+    end
+	UnitCreator = function(obj)
+        if UnitIsVisible(obj) then
+            return wmbapi.UnitCreator(obj)
+        else
+            return ""
+        end
+    end
 	TraceLine = wmbapi.TraceLine
 	GetCameraPosition = wmbapi.GetCameraPosition
 	CancelPendingSpell = wmbapi.CancelPendingSpell
 	ClickPosition = wmbapi.ClickPosition
 	IsAoEPending = wmbapi.IsAoEPending
-	GetTargetingSpell = function() return end
-	WorldToScreen = function(...) return select(2,wmbapi.WorldToScreen(...)) end
-	ScreenToWorld = wmbapi.ScreenToWorld
+	GetTargetingSpell = function() 
+		return 
+	end
+	WorldToScreen = function(...)
+        local scale, x, y = UIParent:GetEffectiveScale(), select(2, wmbapi.WorldToScreen(...))
+        local sx = GetScreenWidth() * scale
+        local sy = GetScreenHeight() * scale
+        return x * sx, y * sy
+    end
+	WorldToScreenRaw = function(...)
+        local x, y = select(2, wmbapi.WorldToScreen(...))
+        return x, 1 - y
+    end
+	ScreenToWorld = function(X, Y)
+        local scale = UIParent:GetEffectiveScale()
+        local sx = GetScreenWidth() * scale
+        local sy = GetScreenHeight() * scale
+        return wmbapi.ScreenToWorld(X / sx, Y / sy)
+    end
+	GetMousePosition = function()
+        local cur_x, cur_y = GetCursorPosition()
+        return cur_x, cur_y
+    end
 	GetDirectoryFiles = wmbapi.GetDirectoryFiles
 	ReadFile = wmbapi.ReadFile
 	WriteFile = wmbapi.WriteFile
@@ -169,25 +292,47 @@ function LoadMiniBotAPI()
 	ObjectGUID = UnitGUID
 	ObjectEntryID = UnitGUID
 	ObjectIsType = wmbapi.ObjectIsType
-	GetAnglesBetweenObjects = wmbapi.GetAnglesBetweenObjects
-	FaceDirection = function(a) if wmbapi.GetObject(a) then wmbapi.FaceDirection(GetAnglesBetweenObjects(a,"player")*2,true) else wmbapi.FaceDirection(a,true) end end
+	GetAnglesBetweenObjects = function(obj1, obj2)
+        if UnitIsVisible(obj1) and UnitIsVisible(obj2) then
+            return wmbapi.GetAnglesBetweenObjects(obj1, obj2)
+        else
+            return 0, 0
+        end
+    end
+	FaceDirection = function(a)
+        if wmbapi.GetObject(a) then
+            wmbapi.FaceDirection(GetAnglesBetweenObjects(a, "player"), true)
+        else
+            wmbapi.FaceDirection(a, true)
+        end
+    end
 	ObjectIsBehind = wmbapi.ObjectIsBehind
-	ObjectDescriptor = wmbapi.ObjectDescriptor
+	ObjectDescriptor = function(obj, offset, type)
+        return UnitIsVisible(obj) and wmbapi.ObjectDescriptor(obj, offset, type)
+    end
 	ObjectTypeFlags = wmbapi.ObjectTypeFlags
 	ObjectField = wmbapi.ObjectField
 	GetActivePlayer = function() return "player" end
-	UnitIsFacing = function(unit1,unit2,degree) return ObjectIsFacing(unit1,unit2,math.rad(degree)/2) end
-	UnitIsFalling = function(unit) return unit and UnitMovementFlags(unit) == wmbapi.GetUnitMovementFlagsTable().Falling end
+	UnitIsFacing = function(unit1,unit2,degree) 
+		return ObjectIsFacing(unit1,unit2,math.rad(degree)/2) 
+	end
+	UnitIsFalling = function(unit) 
+		return unit and UnitMovementFlags(unit) == wmbapi.GetUnitMovementFlagsTable().Falling 
+	end
 	UnitMovementFlags = wmbapi.UnitMovementFlags
 	UnitBoundingRadius = wmbapi.UnitBoundingRadius
 	UnitCombatReach = wmbapi.UnitCombatReach
 	UnitFlags = wmbapi.UnitFlags
-	PlayerFlags = function() wmbapi.UnitFlags("player") end
+	PlayerFlags = function() 
+		wmbapi.UnitFlags("player") 
+	end
 	ObjectCreator = wmbapi.UnitCreator
 	UnitCanBeLooted = wmbapi.UnitIsLootable
 	UnitCanBeSkinned = wmbapi.UnitIsSkinnable
 	UnitPitch = wmbapi.UnitPitch
-	GetGroundZ = function(StartX, StartY, Flags) return TraceLine(StartX, StartY, 10000, StartX, StartY, -10000, Flags or 0x10) end
+	GetGroundZ = function(StartX, StartY, Flags) 
+		return TraceLine(StartX, StartY, 10000, StartX, StartY, -10000, Flags or 0x10) 
+	end
 	GetCorpsePosition = wmbapi.GetCorpsePosition
 	MoveTo = wmbapi.MoveTo
 	ObjectDynamicFlags = wmbapi.ObjectDynamicFlags
@@ -195,7 +340,13 @@ function LoadMiniBotAPI()
 	GetUnitMovement = wmbapi.UnitMovementField
 	WebsocketClose = wmbapi.CloseWebsocket
 	WebsocketSend = wmbapi.SendWebsocketData
-	ObjectPointer = wmbapi.GetObject
+	ObjectPointer = function(obj)
+        if UnitIsVisible(obj) then
+            return wmbapi.GetObject(obj)
+        else
+            return ""
+        end
+    end
 	UnitCreatureTypeID = wmbapi.UnitCreatureTypeId
 	AesEncrypt = wmbapi.AesEncrypt
 	AesDecrypt = wmbapi.AesDecrypt
@@ -234,6 +385,16 @@ function LoadMiniBotAPI()
 	GetOffset = function(offset)
 		return wmbapi.GetObjectDescriptorsTable()[Offsets[string.lower(offset)]]
 	end
-	InitializeNavigation = function() end
-	IsHackEnabled = function() end
+	IsQuestObject = function(...)
+        return wmbapi.ObjectIsQuestObjective(...,false)
+    end
+	InitializeNavigation = function() 
+		return 
+	end
+    IsHackEnabled = function()
+        return
+    end
+    SetHackEnabled = function()
+        return true
+    end
 end
