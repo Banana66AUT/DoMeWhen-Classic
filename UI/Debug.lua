@@ -120,7 +120,13 @@ Frame:AddChild(Label)
 Label = AceGUI:Create("Label")
 Label:SetFullWidth(true)
 Label.Update = function(self)
-    self:SetText("Unit Flags: " .. string.format("%X", ObjectDescriptor(DMW.Player.Pointer, GetOffset("CGUnitData__Flags"), "int")) .. " - Unit Flags2: " .. string.format("%X", ObjectDescriptor(DMW.Player.Pointer, GetOffset("CGUnitData__Flags2"), "int")) .. " - Unit Flags3: " .. string.format("%X", ObjectDescriptor(DMW.Player.Pointer, GetOffset("CGUnitData__Flags3"), "int")))
+	local IntType
+	--[[ if DMWAPI == "bntapi" then 
+		IntType = bntapi.GetValueTypesTable().Int 
+	elseif DMWAPI == "wmbapi" then 
+		IntType = wmbapi.GetValueTypesTable().Int else
+	else IntType = "Int" end ]]--
+    self:SetText("Unit Flags: " .. string.format("%X", ObjectDescriptor(DMW.Player.Pointer, GetOffset("CGUnitData__Flags"), Types.Int )) .. " - Unit Flags2: " .. string.format("%X", ObjectDescriptor(DMW.Player.Pointer, GetOffset("CGUnitData__Flags2"), Types.Int)) .. " - Unit Flags3: " .. string.format("%X", ObjectDescriptor(DMW.Player.Pointer, GetOffset("CGUnitData__Flags3"), Types.Int)))
 end
 Frame:AddChild(Label)
 --Movement
@@ -208,7 +214,7 @@ Label = AceGUI:Create("Label")
 Label:SetFullWidth(true)
 Label.Update = function(self)
     if DMW.Player.Target then
-        self:SetText("Unit Flags: " .. string.format("%X", ObjectDescriptor(DMW.Player.Target.Pointer, GetOffset("CGUnitData__Flags"), "int")) .. " - Unit Flags2: " .. string.format("%X", ObjectDescriptor(DMW.Player.Target.Pointer, GetOffset("CGUnitData__Flags2"), "int")) .. " - Unit Flags3: " .. string.format("%X", ObjectDescriptor(DMW.Player.Target.Pointer, GetOffset("CGUnitData__Flags3"), "int")) .. " - NPC Flags: " .. string.format("%X", ObjectDescriptor(DMW.Player.Target.Pointer, GetOffset("CGUnitData__NPCFlags"), "int")))
+        self:SetText("Unit Flags: " .. string.format("%X", ObjectDescriptor(DMW.Player.Target.Pointer, GetOffset("CGUnitData__Flags"), Types.Int)) .. " - Unit Flags2: " .. string.format("%X", ObjectDescriptor(DMW.Player.Target.Pointer, GetOffset("CGUnitData__Flags2"), Types.Int)) .. " - Unit Flags3: " .. string.format("%X", ObjectDescriptor(DMW.Player.Target.Pointer, GetOffset("CGUnitData__Flags3"), Types.Int)) .. " - NPC Flags: " .. string.format("%X", ObjectDescriptor(DMW.Player.Target.Pointer, GetOffset("CGUnitData__NPCFlags"), Types.Int)))
     else
         self:SetText("")
     end
