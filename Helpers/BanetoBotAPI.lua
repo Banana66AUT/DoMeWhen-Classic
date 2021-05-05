@@ -58,6 +58,10 @@ function LoadBanetoBotAPI()
 		WaterWalkableLiquid = 0x10000,
 		Liquid = 0x20000,
 		EntityCollision = 0x100000,
+		EntityRender = 0x200000,
+		LineOfSight = 0x100111,
+		Cull = 0x80000,
+		SpellLoS = 0x100010
 	}
 	Offsets = {
 		["cgunitdata__animtier"] = "CGUnitData__animTier",
